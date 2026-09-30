@@ -686,6 +686,7 @@ thead th button:hover, thead th button.sorted { color: var(--text); }
 .dlg-body {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  grid-auto-rows: max-content;
   gap: 18px;
   padding: 2px 22px 20px;
   overflow-y: auto;

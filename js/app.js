@@ -42,6 +42,7 @@ const state = {
   keyInfo: null,
   data: null,
   baseRev: 0,
+  baseHoldings: '[]',
   token: null,
   unsynced: false,
   sync: 'idle',
@@ -151,6 +152,7 @@ async function unlockWith(keyInfo, data) {
   state.keyInfo = keyInfo
   state.data = normalize(data)
   state.baseRev = state.data.rev
+  state.baseHoldings = JSON.stringify(state.data.holdings)
   state.unsynced = false
   state.sync = 'idle'
   state.token = state.data.github?.token ?? null
@@ -248,6 +250,7 @@ async function onSetupPassword(e) {
   state.keyInfo = await vault.newKeyInfo(phrase)
   state.data = emptyPortfolio()
   state.baseRev = 0
+  state.baseHoldings = '[]'
   done()
   $('#setup-step-password').hidden = true
   $('#setup-step-token').hidden = false
@@ -359,8 +362,12 @@ async function saveOnce(rekey) {
       throw new Error('The vault on GitHub now uses a different passphrase. Lock, then unlock with the new one.')
     }
     if (remoteData.rev !== state.baseRev) {
-      adoptRemote(remote, remoteData)
-      throw new ConflictError('Your portfolio was changed on another device. The latest version is loaded, so please redo your last change.')
+      if (JSON.stringify(remoteData.holdings) !== state.baseHoldings) {
+        adoptRemote(remote, remoteData)
+        throw new ConflictError('Your portfolio was changed on another device. The latest version is loaded, so please redo your last change.')
+      }
+      state.data = { ...remoteData, holdings: state.data.holdings, github: state.data.github ?? remoteData.github, updatedAt: state.data.updatedAt }
+      state.baseRev = remoteData.rev
     }
   }
   const keyInfo = rekey ?? state.keyInfo
@@ -370,6 +377,7 @@ async function saveOnce(rekey) {
   state.remote = { vault: sealed, sha }
   state.baseRev = next.rev
   state.data.rev = next.rev
+  state.baseHoldings = JSON.stringify(next.holdings)
   if (rekey) {
     state.keyInfo = rekey
     await rememberSession()
@@ -381,6 +389,7 @@ function adoptRemote(remote, data) {
   state.data = data
   state.token = data.github?.token ?? state.token
   state.baseRev = data.rev
+  state.baseHoldings = JSON.stringify(data.holdings)
   for (const d of ['#dlg-add', '#dlg-holding']) if ($(d).open) $(d).close()
   render()
   refreshPrices()
