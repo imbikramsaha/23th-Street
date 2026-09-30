@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; img-src 'self' data:; connect-src 'self' https://api.github.com https://raw.githubusercontent.com https://priceapi.moneycontrol.com; object-src 'none'; base-uri 'none'">
+  <meta name="theme-color" content="#0b0d11" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f4f5f7" media="(prefers-color-scheme: light)">
+  <title>23th Street</title>
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <main id="screen-loading" class="screen gate">
+    <div class="gate-card gate-center">
+      <div class="brand brand-lg"><span class="logo">23</span><span>23th Street</span></div>
+      <p class="muted" id="loading-text">Loading…</p>
+      <button type="button" class="btn" id="loading-retry" hidden>Try again</button>
+    </div>
+  </main>
+
+  <main id="screen-lock" class="screen gate" hidden>
+    <form class="gate-card" id="lock-form">
+      <div class="brand brand-lg"><span class="logo">23</span><span>23th Street</span></div>
+      <p class="muted">Enter your passphrase to unlock.</p>
+      <p class="notice" id="lock-note" hidden></p>
+      <input type="text" name="username" value="23th-street" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+      <label class="field"><span>Passphrase</span>
+        <span class="pw-wrap">
+          <input type="password" id="lock-password" autocomplete="current-password" autocapitalize="none" spellcheck="false">
+          <button type="button" class="pw-toggle" data-action="toggle-pw" data-icon="eye" aria-label="Show"></button>
+        </span>
+      </label>
+      <p class="form-error" id="lock-error" role="alert"></p>
+      <button type="submit" class="btn btn-primary btn-block" id="lock-submit">Unlock</button>
+    </form>
+  </main>
+
+  <main id="screen-setup" class="screen gate" hidden>
+    <form class="gate-card gate-wide" id="setup-step-password" novalidate>
+      <div class="brand brand-lg"><span class="logo">23</span><span>23th Street</span></div>
+      <div>
+        <p class="step-label">Step 1 of 2</p>
+        <h1 class="gate-title">Your passphrase</h1>
+        <p class="muted small">It's the only key to your portfolio, on every device. Here are 6 random words: far harder to crack than a made-up password, and easy to remember.</p>
+      </div>
+      <div id="setup-suggested" class="stack">
+        <div class="passphrase" id="setup-phrase" aria-live="polite"></div>
+        <div class="phrase-actions">
+          <button type="button" class="btn btn-sm" id="setup-regen" data-icon="dice">New words</button>
+          <button type="button" class="link" id="setup-own">Use my own instead</button>
+        </div>
+        <p class="notice">Write these words down or save them in your password manager. If they're lost, nobody can recover your data.</p>
+      </div>
+      <input type="text" name="username" value="23th-street" autocomplete="username" class="sr-only" tabindex="-1" aria-hidden="true">
+      <div class="field" id="setup-own-field" hidden>
+        <label for="setup-pw">Your passphrase</label>
+        <span class="pw-wrap">
+          <input type="password" id="setup-pw" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+          <button type="button" class="pw-toggle" data-action="toggle-pw" data-icon="eye" aria-label="Show"></button>
+        </span>
+        <span class="hint">At least 16 characters. Four or more random words beats any clever password. <button type="button" class="link small" id="setup-use-suggested">Use random words instead</button></span>
+      </div>
+      <div class="field">
+        <label for="setup-pw2" id="setup-pw2-label">Type it once to confirm</label>
+        <span class="pw-wrap">
+          <input type="password" id="setup-pw2" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+          <button type="button" class="pw-toggle" data-action="toggle-pw" data-icon="eye" aria-label="Show"></button>
+        </span>
+      </div>
+      <p class="form-error" id="setup-pw-error" role="alert"></p>
+      <button type="submit" class="btn btn-primary btn-block" id="setup-pw-submit">Continue</button>
+    </form>
+
+    <form class="gate-card gate-wide" id="setup-step-token" novalidate hidden>
+      <div class="brand brand-lg"><span class="logo">23</span><span>23th Street</span></div>
+      <div>
+        <p class="step-label">Step 2 of 2</p>
+        <h1 class="gate-title">Connect GitHub</h1>
+        <p class="muted small">Your encrypted portfolio is saved to its own repository, <b>23th-Street-vault</b>. GitHub needs a token that can write to that one repository and nothing else.</p>
+      </div>
+      <div id="setup-token-help"></div>
+      <label class="field"><span>Token</span><input type="password" id="setup-token" placeholder="github_pat_…" autocomplete="off" spellcheck="false"></label>
+      <p class="form-error" id="setup-token-error" role="alert"></p>
+      <button type="submit" class="btn btn-primary btn-block" id="setup-token-submit">Create vault</button>
+      <div class="gate-links">
+        <button type="button" class="link" id="setup-back">Back</button>
+        <button type="button" class="link" id="setup-skip">Skip for now</button>
+      </div>
+    </form>
+  </main>
+
+  <div id="screen-main" class="screen" hidden>
+    <header class="topbar">
+      <div class="wrap topbar-inner">
+        <div class="brand"><span class="logo">23</span><span class="brand-name">23th Street</span></div>
+        <div class="topbar-actions">
+          <button type="button" class="sync-pill" id="sync-pill"></button>
+          <button type="button" class="icon-btn" id="btn-refresh" data-icon="refresh" title="Refresh prices" aria-label="Refresh prices"></button>
+          <button type="button" class="icon-btn" id="btn-settings" data-icon="settings" title="Settings" aria-label="Settings"></button>
+          <button type="button" class="icon-btn" id="btn-lock" data-icon="lock" title="Lock" aria-label="Lock"></button>
+          <button type="button" class="btn btn-primary" id="btn-add" data-icon="plus"><span class="add-label">Add holding</span></button>
+        </div>
+      </div>
+    </header>
+    <main class="wrap page">
+      <section class="summary" id="summary" aria-label="Portfolio summary"></section>
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Holdings <span class="count" id="holding-count"></span></h2>
+          <p class="muted small" id="price-status" aria-live="polite"></p>
+        </div>
+        <div id="holdings"></div>
+      </section>
+      <p class="foot muted small">Prices from Moneycontrol and may be delayed. Returns are before taxes and charges.</p>
+    </main>
+  </div>
+
+  <dialog id="dlg-add" class="dialog" aria-label="Add holding"></dialog>
+  <dialog id="dlg-holding" class="dialog dialog-wide" aria-label="Holding details"></dialog>
+  <dialog id="dlg-settings" class="dialog" aria-label="Settings"></dialog>
+  <dialog id="dlg-confirm" class="dialog dialog-sm" aria-label="Confirm"></dialog>
+  <div class="toasts" id="toasts" aria-live="polite"></div>
+</body>
+</html>
